@@ -18,8 +18,8 @@ kikiri-tts/StyleTTS2/kokoro_symbols.py (178 tokens; 115 real symbols).
 import json
 import importlib.resources
 
-from misaki import data
-from misaki.de import normalize_for_lookup
+from misaki_gruut import data
+from misaki_gruut.de import normalize_for_lookup
 
 # Real Kokoro-82M phoneme symbols (excludes the '$' pad and PUA placeholders).
 KOKORO_VOCAB = frozenset(

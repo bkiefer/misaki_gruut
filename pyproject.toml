@@ -2,9 +2,9 @@
 allow-direct-references = true
 
 [project]
-name = "misaki"
+name = "misaki-gruut"
 version = "0.9.4"
-description = "G2P engine for TTS"
+description = "G2P engine for TTS, European languages only, gruut instead of espeak-ng"
 readme = "README.md"
 authors = [
     { name = "hexgrad", email = "hello@hexgrad.com" }
@@ -15,32 +15,32 @@ classifiers = [
     "License :: OSI Approved :: Apache Software License",
     "Operating System :: OS Independent",
 ]
-requires-python = ">=3.8, <3.14"
+requires-python = ">=3.10, <3.14"
 dependencies = [
     "addict",
+    "gruut>=2.4.0",
     "pip>=25.0.1", 
     # ^ Spacy needs pip within Python, uv lacks pip by default
     "regex",
 ]
 
 [project.optional-dependencies]
-en = ["num2words", "spacy<4", "spacy-curated-transformers", "phonemizer-fork", "espeakng-loader", "torch", "transformers"]
-ja = ["fugashi", "jaconv", "mojimoji", "unidic", "pyopenjtalk"]
-ko = ["jamo", "nltk"]
-zh = ["jieba", "ordered-set", "pypinyin", "cn2an", "pypinyin-dict"]
-vi = ["num2words", "spacy", "spacy-curated-transformers", "underthesea"]
-de = ["phonemizer-fork", "espeakng-loader"]
-he = ["mishkal-hebrew>=0.3.2; python_version < '3.12'"]
+en = ["num2words", "spacy<4", "spacy-curated-transformers", "torch", "transformers"]
+# Other European languages are phonemized with gruut, see misaki_gruut/gruut.py
+ca = ["gruut[ca]"]
+cs = ["gruut[cs]"]
+de = ["gruut[de]"]
+es = ["gruut[es]"]
+fr = ["gruut[fr]"]
+it = ["gruut[it]"]
+lb = ["gruut[lb]"]
+nl = ["gruut[nl]"]
+pt = ["gruut[pt]"]
+ru = ["gruut[ru]"]
+sv = ["gruut[sv]"]
 
 [dependency-groups]
 dev = ["pytest"]
-
-[tool.uv]
-# mishkal-hebrew (the sole [he] dependency) only ships wheels for Python < 3.12.
-# This fork targets 3.12 (see .python-version), so constrain universal resolution
-# to >= 3.12. Affects only this repo's dev lockfile, not the published package's
-# requires-python or optional-dependencies, which consumers still resolve normally.
-environments = ["python_version >= '3.12'"]
 
 [build-system]
 requires = ["hatchling"]

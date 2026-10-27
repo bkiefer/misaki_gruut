@@ -1,11 +1,11 @@
-"""Tests for misaki.de — German text normalization and G2P.
+"""Tests for misaki_gruut.de — German text normalization and G2P.
 
 Unit tests (no espeak-ng required) test normalize_text_de() and helpers.
-Integration tests (require espeak-ng) test DEG2P end-to-end.
+Integration tests (require gruut[de]) test DEG2P end-to-end.
 """
 
 import pytest
-from misaki.de import _int_to_de, _ordinal_stem_de, _year_de, normalize_text_de
+from misaki_gruut.de import _int_to_de, _ordinal_stem_de, _year_de, normalize_text_de
 
 # ── _int_to_de ───────────────────────────────────────────────────────────────
 
@@ -347,7 +347,7 @@ class TestComplexSentence:
 
 # ── pronunciation overrides (no espeak-ng required) ──────────────────────────
 
-from misaki.de import normalize_for_lookup, override_for
+from misaki_gruut.de import normalize_for_lookup, override_for
 
 
 class TestNormalizeForLookup:
@@ -408,23 +408,23 @@ class TestOverrideFor:
         assert override_for("kokoro") == "kˈoːkoːʁoː"
 
 
-# ── integration tests (require espeak-ng) ────────────────────────────────────
+# ── integration tests (require gruut[de]) ─────────────────────────────────────
 
 try:
-    from misaki.espeak import EspeakG2P
+    import gruut_lang_de
 
-    ESPEAK_AVAILABLE = True
-except (ImportError, OSError):
-    ESPEAK_AVAILABLE = False
+    GRUUT_AVAILABLE = True
+except ImportError:
+    GRUUT_AVAILABLE = False
 
 
 @pytest.mark.skipif(
-    not ESPEAK_AVAILABLE, reason="espeak-ng or phonemizer not available"
+    not GRUUT_AVAILABLE, reason="gruut[de] not available"
 )
 class TestDEG2PIntegration:
     @pytest.fixture(autouse=True)
     def setup(self):
-        from misaki.de import DEG2P
+        from misaki_gruut.de import DEG2P
 
         self.g2p = DEG2P()
 
@@ -449,12 +449,12 @@ class TestDEG2PIntegration:
         assert isinstance(ps, str)
         assert len(ps) > 0
 
-    def test_no_override_path_matches_plain_espeak(self):
-        # Text without any override word must be identical to running espeak on
+    def test_no_override_path_matches_plain_gruut(self):
+        # Text without any override word must be identical to running gruut on
         # the normalized text (no regression from the routing layer).
         text = "Guten Morgen, wie geht es Ihnen?"
         via_g2p, tok = self.g2p(text)
-        direct, _ = self.g2p.espeak(normalize_text_de(text))
+        direct, _ = self.g2p.phonemizer(normalize_text_de(text))
         assert via_g2p == direct
         assert tok is None
 

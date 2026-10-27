@@ -5,7 +5,7 @@ uv pip install ".[en]"
 uv run examples/usage.py    
 """
 
-from misaki import en
+from misaki_gruut import en
 
 g2p = en.G2P(trf=False, british=False, fallback=None) # no transformer, American English
 

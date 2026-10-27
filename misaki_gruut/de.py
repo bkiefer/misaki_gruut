@@ -1,9 +1,9 @@
-"""German G2P: text normalization + espeak-ng phonemization.
+"""German G2P: text normalization + gruut phonemization.
 
 normalize_text_de() expands numbers, dates, times, currency, and
-abbreviations so espeak-ng receives clean spelled-out text.
+abbreviations so gruut receives clean spelled-out text.
 
-DEG2P wraps normalize_text_de() + EspeakG2P for use in KPipeline.
+DEG2P wraps normalize_text_de() + GruutG2P for use in KPipeline.
 """
 
 from typing import Optional, Tuple
@@ -52,10 +52,10 @@ _TENS = [
     "neunzig",
 ]
 _LARGE_SCALES = [
-    (1_000_000_000_000_000, "eine Trillionen", "Trillionen"),
-    (1_000_000_000_000, "eine Billionen", "Billionen"),
+    (1_000_000_000_000_000, "eine Trillion", "Trillionen"),
+    (1_000_000_000_000, "eine Billion", "Billionen"),
     (1_000_000_000, "eine Milliarde", "Milliarden"),
-    (1_000_000, "eine Millionen", "Millionen"),
+    (1_000_000, "eine Million", "Millionen"),
 ]
 _PHONE_NUMBER_RE = re.compile(r"(?<![\d.:])\d{2,4}(?:[ -]\d{2,6}){1,}(?![\d.:])")
 
@@ -361,8 +361,8 @@ def normalize_text_de(text):
 # A small lexicon layer on top of espeak-de. espeak mispronounces English /
 # brand / tech terms (GitHub, PyTorch, CUDA, ...) and a few foreign-origin
 # German words. These overrides supply hand-written phonemes that bypass espeak
-# and go straight to the model. Phonemes use the same symbol convention espeak's
-# output is mapped to (see misaki.espeak.EspeakG2P.e2m), e.g. capital A/I/W/O/Y
+# and go straight to the model. Phonemes use the same symbol convention gruut's
+# output is mapped to (see misaki_gruut.gruut.PAIRS), e.g. capital A/I/W/O/Y
 # for diphthongs.
 #
 # Lookup keys are matched after normalize_for_lookup(): casefold, NFKD, strip
@@ -458,17 +458,17 @@ def _find_phrase_override(text: str, matches, start_index: int):
 
 
 class DEG2P:
-    """German G2P: normalize text then phonemize via espeak-ng."""
+    """German G2P: normalize text then phonemize via gruut."""
 
     def __init__(self):
-        from .espeak import EspeakG2P
+        from .gruut import GruutG2P
 
-        self.espeak = EspeakG2P(language="de")
+        self.phonemizer = GruutG2P(language="de-de")
 
-    def _espeak_phonemes(self, text) -> str:
+    def _phonemes(self, text) -> str:
         if not text or not text.strip():
             return ""
-        ps, _ = self.espeak(text)
+        ps, _ = self.phonemizer(text)
         return ps or ""
 
     @staticmethod
@@ -492,8 +492,8 @@ class DEG2P:
     def __call__(self, text) -> Tuple[str, None]:
         text = normalize_text_de(text)
 
-        # Find override words; everything between them is phonemized by espeak.
-        # When no overrides match, this is identical to espeak(text).
+        # Find override words; everything between them is phonemized by gruut.
+        # When no overrides match, this is identical to phonemizer(text).
         parts = []
         cursor = 0
         matches = list(_OVERRIDE_WORD_RE.finditer(text))
@@ -506,16 +506,16 @@ class DEG2P:
                 continue
             preceding = text[cursor:match.start()]
             if preceding.strip():
-                parts.append(self._espeak_phonemes(preceding))
+                parts.append(self._phonemes(preceding))
             parts.append(phonemes)
             cursor = matches[end_index].end()
             i = end_index + 1
 
         if cursor == 0:
-            return self.espeak(text)
+            return self.phonemizer(text)
 
         trailing = text[cursor:]
         if trailing.strip():
-            parts.append(self._espeak_phonemes(trailing))
+            parts.append(self._phonemes(trailing))
 
         return self._render(parts), None
